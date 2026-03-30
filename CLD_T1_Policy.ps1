@@ -190,7 +190,7 @@ Write-Host ""
 
 # Credits
 Write-ColoredLine "=== Credits ===" Cyan
-Write-ColoredLine "Made by CoffeeSlow" DarkBlue
+Write-ColoredLine "Created by CLD Justice Department" DarkBlue
 Write-Host ""
 
 # Wait to Start
