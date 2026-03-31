@@ -295,7 +295,11 @@ $suspicious = @(
     "serotonin","aimmy","valex","solara","xeno",
     "monkeyaim","thunderaim","thunderclient","celex",
     "celery","zarora","juju","nezure","fluxus",
-    "clumsy","myst","horizon","tupical","cloudy"
+    "clumsy","myst","horizon","tupical","cloudy",
+    "volt","potassium","wave","cosmic","volcano",
+    "isaeva","synapse","velocity","seliware","bunni",
+    "sirhurt","delta","cryptic","vega","codex",
+    "hydrogen","macsploit","opiumware","rbxcli","ronin"
 )
 
 $foundProc = $false
