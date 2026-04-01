@@ -299,7 +299,8 @@ $suspicious = @(
     "volt","potassium","wave","cosmic","volcano",
     "isaeva","synapse","velocity","seliware","bunni",
     "sirhurt","delta","cryptic","vega","codex",
-    "hydrogen","macsploit","opiumware","rbxcli","ronin"
+    "hydrogen","macsploit","opiumware","rbxcli","ronin",
+    "kiciahook","snaw","ue"
 )
 
 $foundProc = $false
