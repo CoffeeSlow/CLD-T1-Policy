@@ -300,7 +300,7 @@ $suspicious = @(
     "isaeva","synapse","velocity","seliware","bunni",
     "sirhurt","delta","cryptic","vega","codex",
     "hydrogen","macsploit","opiumware","rbxcli","ronin",
-    "kiciahook","snaw","ue"
+    "kiciahook","snaw"
 )
 
 $foundProc = $false
