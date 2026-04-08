@@ -329,6 +329,62 @@ try {
     $keyAuthOutput += "SUCCESS: KeyAuth area clean."
 }
 
+# VM Check
+$vmOutput = @()
+$vmDetected = $false
+$vmName = ""
+
+# Check registry keys
+$vmRegistryKeys = @(
+    @{Path="HKLM:\SOFTWARE\VMware, Inc.\VMware Tools"; Name="VMware"},
+    @{Path="HKLM:\SOFTWARE\Oracle\VirtualBox Guest Additions"; Name="VirtualBox"},
+    @{Path="HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters"; Name="Hyper-V"},
+    @{Path="HKLM:\HARDWARE\DEVICEMAP\Scsi\Scsi Port 0\Scsi Bus 0\Target Id 0\Logical Unit Id 0"; Name="QEMU/VirtualBox"}
+)
+foreach ($key in $vmRegistryKeys) {
+    if (Test-Path $key.Path) {
+        $vmDetected = $true
+        $vmName = $key.Name
+        break
+    }
+}
+
+# Check VM processes
+if (-not $vmDetected) {
+    $vmProcesses = @("vmtoolsd","vmwaretray","vmwareuser","vboxservice","vboxtray","qemu-ga","vmsrvc","vmusrvc","xenservice","vmacthlp")
+    foreach ($vmp in $vmProcesses) {
+        if (Get-Process -Name $vmp -ErrorAction SilentlyContinue) {
+            $vmDetected = $true
+            $vmName = $vmp
+            break
+        }
+    }
+}
+
+# Check WMI BIOS/hardware
+if (-not $vmDetected) {
+    try {
+        $bios = Get-CimInstance Win32_BIOS -ErrorAction Stop | Select-Object -ExpandProperty Manufacturer
+        $board = Get-CimInstance Win32_BaseBoard -ErrorAction Stop | Select-Object -ExpandProperty Manufacturer
+        $vmStrings = @("VMware","VirtualBox","QEMU","Xen","Microsoft Corporation","innotek","bochs","KVM")
+        foreach ($str in $vmStrings) {
+            if ($bios -like "*$str*" -or $board -like "*$str*") {
+                if ($str -ne "Microsoft Corporation") {
+                    $vmDetected = $true
+                    $vmName = $str
+                    break
+                }
+            }
+        }
+    } catch {}
+}
+
+if ($vmDetected) {
+    $vmOutput += "FAILURE: Virtual machine detected: $vmName"
+} else {
+    $vmOutput += "SUCCESS: No virtual machine detected."
+}
+
 # Display Step 1 Results
 Write-Section "Modules" $modulesOutput
 Write-Section "CPU & GPU Detections" $cpuGpuOutput
@@ -337,8 +393,9 @@ Write-Section "Defender Exclusions" $exclusionsOutput
 Write-Section "Memory Integrity" $memoryIntegrityOutput
 Write-Section "Process Scan" $processOutput
 Write-Section "KeyAuth Check" $keyAuthOutput
+Write-Section "Virtual Machine Check" $vmOutput
 
-$allResults1 = $modulesOutput + $cpuGpuOutput + $defenderOutput + $exclusionsOutput + $memoryIntegrityOutput + $processOutput + $keyAuthOutput
+$allResults1 = $modulesOutput + $cpuGpuOutput + $defenderOutput + $exclusionsOutput + $memoryIntegrityOutput + $processOutput + $keyAuthOutput + $vmOutput
 $total1 = ($allResults1 | Where-Object { $_ -match '^(SUCCESS|FAILURE|WARNING)' }).Count
 $success1 = ($allResults1 | Where-Object { $_ -match '^SUCCESS' }).Count
 if ($total1 -eq 0) { $total1 = 7 }
