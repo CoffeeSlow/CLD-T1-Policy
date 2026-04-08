@@ -289,27 +289,44 @@ try {
 }
 
 # Process Scan
-$suspicious = @(
-    "matcha","matrix","loader","map","severe","isabelle",
-    "photon","dx9ware","melatonin","evolve","atlanta",
-    "serotonin","aimmy","valex","solara","xeno",
-    "monkeyaim","thunderaim","thunderclient","celex",
-    "celery","zarora","juju","nezure","fluxus",
-    "clumsy","myst","horizon","tupical","cloudy",
-    "volt","potassium","wave","cosmic","volcano",
-    "isaeva","synapse","velocity","seliware","bunni",
-    "sirhurt","delta","cryptic","vega","codex",
-    "hydrogen","macsploit","opiumware","rbxcli","ronin",
-    "kiciahook","snaw"
+# Wildcard match - specific enough names that won't cause false positives
+$suspiciousWildcard = @(
+    "matcha","matrix","isabelle","photon","dx9ware","melatonin",
+    "evolve","atlanta","serotonin","aimmy","valex","solara","xeno",
+    "monkeyaim","thunderaim","thunderclient","celex","celery",
+    "zarora","juju","nezure","fluxus","clumsy","myst","horizon",
+    "tupical","cloudy","potassium","cosmic","volcano","isaeva",
+    "synapse","velocity","seliware","bunni","sirhurt","cryptic",
+    "hydrogen","macsploit","opiumware","rbxcli","ronin","kiciahook","snaw"
+)
+
+# Exact match - short cheat names that could false positive as substrings
+$suspiciousExact = @(
+    "loader","severe","wave","volt","delta","codex","vega"
 )
 
 $foundProc = $false
+$checkedProcs = @{}
 Get-Process | ForEach-Object {
-    foreach ($s in $suspicious) {
-        if ($_.Name.ToLower() -like "*$s*") {
+    $procName = $_.Name.ToLower()
+    $procKey = "$procName-$($_.Id)"
+    if ($checkedProcs[$procKey]) { return }
+    $checkedProcs[$procKey] = $true
+
+    foreach ($s in $suspiciousWildcard) {
+        if ($procName -like "*$s*") {
             $processOutput += "FAILURE: Suspicious process $($_.Name) (PID $($_.Id))"
             $foundProc = $true
             $suspiciousFindings.Add([PSCustomObject]@{Type = "SuspiciousProcess"; Name = $_.Name})
+            return
+        }
+    }
+    foreach ($s in $suspiciousExact) {
+        if ($procName -eq $s) {
+            $processOutput += "FAILURE: Suspicious process $($_.Name) (PID $($_.Id))"
+            $foundProc = $true
+            $suspiciousFindings.Add([PSCustomObject]@{Type = "SuspiciousProcess"; Name = $_.Name})
+            return
         }
     }
 }
